@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(uuid())
+  email            String?            @unique @db.VarChar(50)
+  name             String?            @db.VarChar(20)
+  password         String?            @db.VarChar(100)
+  phone            String?            @unique @db.VarChar(20)
+  profileImg       String?            @default("imageUrl")
+  isDeleted        Boolean?           @default(false)
+  birth            String?            @db.VarChar(9)
+  provider         Provider?          @default(LOCAL)
+  createdAt        DateTime?          @default(now()) @db.Date
+  updatedAt        DateTime?          @updatedAt
+  PillBookMark     PillBookMark[]
+}
+
+model PillBookMark {
+  id      String  @id @default(uuid())
+  user_id String?
+  User    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum Provider {
+  GOOGLE
+  KAKAO
+  LOCAL
+}
