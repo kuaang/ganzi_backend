@@ -7,29 +7,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id               String             @id @default(uuid())
-  email            String?            @unique @db.VarChar(50)
-  name             String?            @db.VarChar(20)
-  password         String?            @db.VarChar(100)
-  phone            String?            @unique @db.VarChar(20)
-  profileImg       String?            @default("imageUrl")
-  isDeleted        Boolean?           @default(false)
-  birth            String?            @db.VarChar(9)
-  provider         Provider?          @default(LOCAL)
-  createdAt        DateTime?          @default(now()) @db.Date
-  updatedAt        DateTime?          @updatedAt
-  PillBookMark     PillBookMark[]
+model Inquiries {
+  id                  Int         @id @default(autoincrement())
+  inquiry_type        InquiryType
+  org_name            String      @db.VarChar(191)
+  department_position String?     @db.VarChar(191)
+  applicant_no        Int
+  applicant_email     String      @db.VarChar(191)
+  participants        Int
+  class_duration      String?     @db.VarChar(191)
+  other_inquiries     String?     @db.VarChar(191)
 }
 
-model PillBookMark {
-  id      String  @id @default(uuid())
-  user_id String?
-  User    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+model TimeTable {
+  id            Int      @id @default(autoincrement())
+  course_id     Int
+  main_category String   @db.VarChar(191)
+  topic         String   @db.VarChar(191)
+  date          DateTime @default(now()) @db.Date
+
+  // Relation
+  course Courses @relation(fields: [course_id], references: [id])
 }
 
-enum Provider {
-  GOOGLE
-  KAKAO
-  LOCAL
+model Courses {
+  id                   Int        @id @default(autoincrement())
+  course_type          Int
+  course_name          String     @db.VarChar(191)
+  course_host          String     @db.VarChar(191)
+  course_management    String     @db.VarChar(191)
+  recruitment_quota    Int
+  course_duration      String     @db.VarChar(191)
+  course_target        String     @db.VarChar(191)
+  course_day           course_day
+  start_date           DateTime   @db.Date
+  end_date             DateTime   @db.Date
+  start_time           DateTime   @db.Time
+  end_time             DateTime   @db.Time
+  course_purpose       String     @db.VarChar(191)
+  course_description   String     @db.VarChar(191)
+  course_inquiry_no    Int
+  course_inquiry_email String     @db.VarChar(191)
+  course_thumbnail     String     @db.VarChar(191)
+  course_poster        String     @db.VarChar(191)
+  description_file     String     @db.VarChar(191)
+  hashtag_1            String
+  hashtag_2            String
+  hashtag_3            String
+
+  // Relation
+  timetable TimeTable[]
+}
+
+enum InquiryType {
+  inquiry
+  application
+  other
+}
+
+enum course_day {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
 }
