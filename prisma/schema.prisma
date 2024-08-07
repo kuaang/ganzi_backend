@@ -11,6 +11,7 @@ model Inquiries {
   id                  Int         @id @default(autoincrement())
   inquiry_type        InquiryType
   org_name            String      @db.VarChar(191)
+  applicant_name      String?     @db.VarChar(191)
   department_position String?     @db.VarChar(191)
   applicant_no        Int
   applicant_email     String      @db.VarChar(191)
@@ -31,46 +32,191 @@ model TimeTable {
 }
 
 model Courses {
-  id                   Int        @id @default(autoincrement())
+  id                   Int          @id @default(autoincrement())
   course_type          Int
-  course_name          String     @db.VarChar(191)
-  course_host          String     @db.VarChar(191)
-  course_management    String     @db.VarChar(191)
+  course_name          String       @db.VarChar(191)
+  course_host          String       @db.VarChar(191)
+  course_management    String       @db.VarChar(191)
   recruitment_quota    Int
-  course_duration      String     @db.VarChar(191)
-  course_target        String     @db.VarChar(191)
-  course_day           course_day
-  start_date           DateTime   @db.Date
-  end_date             DateTime   @db.Date
-  start_time           DateTime   @db.Time
-  end_time             DateTime   @db.Time
-  course_purpose       String     @db.VarChar(191)
-  course_description   String     @db.VarChar(191)
+  course_duration      Int
+  course_target        CourseTarget
+  course_style         CourseStyle
+  course_day           CourseDay
+  start_date           DateTime     @db.Date
+  end_date             DateTime     @db.Date
+  start_time           DateTime     @db.Time
+  end_time             DateTime     @db.Time
+  course_purpose       String       @db.VarChar(191)
+  course_description   String       @db.VarChar(191)
   course_inquiry_no    Int
-  course_inquiry_email String     @db.VarChar(191)
-  course_thumbnail     String     @db.VarChar(191)
-  course_poster        String     @db.VarChar(191)
-  description_file     String     @db.VarChar(191)
-  hashtag_1            String
-  hashtag_2            String
-  hashtag_3            String
+  course_inquiry_email String       @db.VarChar(191)
+  course_thumbnail     String       @db.VarChar(191)
+  course_poster        String       @db.VarChar(191)
+  description_file     String       @db.VarChar(191)
+  hashtag_1            String?
+  hashtag_2            String?
+  hashtag_3            String?
 
   // Relation
-  timetable TimeTable[]
+  timetable         TimeTable[]
+  courseapplication CourseApplications[]
+  enrollment        Enrollments[]
+  teaching          Teachings[]
+  review            Reviews[]
+}
+
+model CourseApplications {
+  id         Int @id @default(autoincrement())
+  course_id  Int
+  student_id Int
+
+  course  Courses @relation(fields: [course_id], references: [id])
+  student Members @relation(fields: [student_id], references: [id])
+}
+
+model Enrollments {
+  id         Int @id @default(autoincrement())
+  course_id  Int
+  student_id Int
+
+  course  Courses @relation(fields: [course_id], references: [id])
+  student Members @relation(fields: [student_id], references: [id])
+}
+
+model Teachings {
+  id         Int @id @default(autoincrement())
+  course_id  Int
+  teacher_id Int
+
+  course  Courses @relation(fields: [course_id], references: [id])
+  teacher Members @relation(fields: [teacher_id], references: [id])
+}
+
+model Reviews {
+  id             Int    @id @default(autoincrement())
+  writer_id      Int
+  course_id      Int
+  review_content String @db.VarChar(191)
+  review_rating  Int
+
+  course Courses @relation(fields: [course_id], references: [id])
+  writer Members @relation(fields: [writer_id], references: [id])
+}
+
+model Notices {
+  id             Int    @id @default(autoincrement())
+  notice_title   String @db.VarChar(191)
+  notice_content String @db.VarChar(191)
+  view_count     Int
+  admin_id       Int
+
+  admin Members @relation(fields: [admin_id], references: [id])
+}
+
+model FAQs {
+  id          Int    @id @default(autoincrement())
+  FAQ_title   String @db.VarChar(191)
+  FAQ_content String @db.VarChar(191)
+  view_count  Int
+  admin_id    Int
+
+  admin Members @relation(fields: [admin_id], references: [id])
+}
+
+model Members {
+  id                Int              @id @default(autoincrement())
+  member_type       MemberType
+  member_name       String           @db.VarChar(191)
+  member_email      String           @db.VarChar(191)
+  member_pw         String           @db.VarChar(191)
+  marketing_consent MarketingConsent
+  birth_date        DateTime?        @db.Date
+
+  courseapplication CourseApplications[]
+  enrollment        Enrollments[]
+  teaching          Teachings[]
+  review            Reviews[]
+  notice            Notices[]
+  faq               FAQs[]
+  education         Education[]
+  address           Address[]
+}
+
+model Introduction {
+  id                 Int    @id @default(autoincrement())
+  performance        String @db.VarChar(191)
+  center_description Int
+}
+
+model Education {
+  id                      Int                   @id @default(autoincrement())
+  student_id              Int
+  highest_education_level HighestEducationLevel
+  school_name             String                @db.VarChar(191)
+  major                   String                @db.VarChar(191)
+  academic_status         AcademicStatus
+
+  student Members @relation(fields: [student_id], references: [id])
+}
+
+model Address {
+  id        Int    @id @default(autoincrement())
+  member_id Int
+  city      String @db.VarChar(191)
+  district  String @db.VarChar(191)
+
+  member Members @relation(fields: [member_id], references: [id])
 }
 
 enum InquiryType {
-  inquiry
-  application
-  other
+  Inquiry
+  Application
+  Other
 }
 
-enum course_day {
-  monday
-  tuesday
-  wednesday
-  thursday
-  friday
-  saturday
-  sunday
+enum CourseDay {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
+}
+
+enum CourseTarget {
+  Undergraduate
+  Unemployed
+  Incumbent
+}
+
+enum CourseStyle {
+  Online
+  Offline
+  Mixed
+}
+
+enum MemberType {
+  Student
+  Teacher
+  Admin
+}
+
+enum MarketingConsent {
+  Yes
+  No
+}
+
+enum HighestEducationLevel {
+  Non_graduate
+  Bachelor
+  Master
+  Doctor
+}
+
+enum AcademicStatus {
+  Dropout
+  Completion
+  Candidate
+  Graduate
 }
